@@ -23,7 +23,8 @@ Proje içerisinde 3 farklı veri madenciliği algoritması aktif olarak çalış
 Projeyi hemen test etmek için hazır veri setini kullanabilirsiniz.
 Bu veri seti, üniversite öğrencileriyle yapılan anket sonuçlarını içerir.
 
-📥 **[Örnek Veriyi İndir](ornek_veri/Ogrenci_Anket_Verisi.xlsx)**
+📥 **[Örnek Veriyi İndir](ornek_veri/Universite_Ogrencileri_Harcama_analizi.xlsx
+)**
 
 **Veri Seti İçeriği:**
 * **Cinsiyet:** Kadın / Erkek
