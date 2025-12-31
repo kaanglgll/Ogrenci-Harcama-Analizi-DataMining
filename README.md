@@ -18,6 +18,19 @@ Proje içerisinde 3 farklı veri madenciliği algoritması aktif olarak çalış
     * Her grubun karakteristik özelliklerini (Örn: "Gece Hayatı Sevenler", "Tasarrufçular") raporlar.
 
 ## 🛠️ Kurulum
+## 📂 Örnek Veri Seti
+
+Projeyi hemen test etmek için hazır veri setini kullanabilirsiniz.
+Bu veri seti, üniversite öğrencileriyle yapılan anket sonuçlarını içerir.
+
+📥 **[Örnek Veriyi İndir](ornek_veri/Universite_Ogrencileri_Harcama_analizi.xlsx)**
+
+**Veri Seti İçeriği:**
+* **Cinsiyet:** Kadın / Erkek
+* **Barınma:** Aile evi, Yurt, Öğrenci Evi
+* **Ulaşım:** Toplu taşıma, Şahsi araç
+* **Harcamalar:** Sigara, Alkol, Kahve, Giyim vb. (Virgülle ayrılmış)
+* **Ay Sonu:** Getirebiliyor / Getiremiyor
 
 Projeyi kendi bilgisayarınızda çalıştırmak için:
 
