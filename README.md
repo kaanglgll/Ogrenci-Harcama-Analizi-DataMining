@@ -23,7 +23,7 @@ Projeyi kendi bilgisayarınızda çalıştırmak için:
 
 1.  Repoyu klonlayın:
     ```bash
-    git clone [https://github.com/KULLANICI_ADIN/REPO_ADIN.git](https://github.com/KULLANICI_ADIN/REPO_ADIN.git)
+    git clone [https://github.com/kaanglgll/Ogrenci-Harcama-Analizi-DataMining.git](https://github.com/kaanglgll/Ogrenci-Harcama-Analizi-DataMining.git)
     ```
 2.  Gerekli kütüphaneleri yükleyin:
     ```bash
