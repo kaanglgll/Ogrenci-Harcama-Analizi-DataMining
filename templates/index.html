@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öğrenci Veri Analiz Platformu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .main-card { border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: none; }
+        .badge-cause { background-color: #6c5ce7; color: white; margin: 2px; padding: 8px; font-weight: normal;}
+        .badge-result { background-color: #00b894; color: white; margin: 2px; padding: 8px; font-weight: normal;}
+        .filter-dropdown-menu { max-height: 300px; overflow-y: auto; min-width: 280px; padding: 10px; }
+        .nav-tabs .nav-link.active { background-color: #fff; border-bottom-color: #fff; color: #0d6efd; font-weight: bold; border-top: 3px solid #0d6efd;}
+        .nav-tabs .nav-link { color: #6c757d; font-weight: 500; }
+        .nav-tabs { border-bottom: 2px solid #dee2e6; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-6 fw-bold text-primary">🎓 Öğrenci Harcama Analizi</h1>
+        <p class="text-muted">APRIORI • ID3 • GINI • K-MEANS</p>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'apriori' %}active{% endif %}" id="apriori-tab" data-bs-toggle="tab" data-bs-target="#apriori" type="button" role="tab">🔗 Birliktelik (Apriori)</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'tree' %}active{% endif %}" id="tree-tab" data-bs-toggle="tab" data-bs-target="#tree" type="button" role="tab">🌳 Karar Ağaçları (ID3, GINI)</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'kmeans' %}active{% endif %}" id="kmeans-tab" data-bs-toggle="tab" data-bs-target="#kmeans" type="button" role="tab">🎯 Gruplama (K-Means)</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+        
+        <div class="tab-pane fade {% if active_tab == 'apriori' %}show active{% endif %}" id="apriori" role="tabpanel">
+            <div class="card main-card p-4 bg-white">
+                <form action="/" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="apriori">
+                    
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Excel Dosyası:</label>
+                            <input class="form-control" type="file" name="file" accept=".xlsx" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Min. Support</label>
+                            <select name="min_support" class="form-select form-select-sm">
+                                <option value="0.03">Very Low (%3)</option>
+                                <option value="0.05" selected>Normal (%5)</option>
+                                <option value="0.10">High (%10)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Min. Confidence</label>
+                            <select name="min_confidence" class="form-select form-select-sm">
+                                <option value="0.30">Low (%30)</option>
+                                <option value="0.50" selected>Normal (%50)</option>
+                                <option value="0.80">Very High (%80)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <div class="p-3 bg-light border rounded">
+                                <label class="fw-bold small mb-2 text-secondary"><i class="fas fa-users-cog"></i> Analize Dahil Et:</label><br>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="use_gender" value="yes" checked> 
+                                    <label class="form-check-label">Cinsiyet</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="use_housing" value="yes" checked> 
+                                    <label class="form-check-label">Barınma</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="use_transport" value="yes" checked> 
+                                    <label class="form-check-label">Ulaşım</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="use_budget" value="yes" checked> 
+                                    <label class="form-check-label">Ay Sonu</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-primary w-100 fw-bold">KURALLARI BUL (APRIORI)</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if rules %}
+            <div class="card main-card p-4 mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-primary mb-0">
+                        📊 Analiz Sonuçları (<span id="ruleCount">{{ rules|length }}</span> Kural)
+                    </h5>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" id="filterDrop" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter"></i> Filtrele
+                        </button>
+                        <div class="dropdown-menu filter-dropdown-menu shadow dropdown-menu-end">
+                             <div class="form-check border-bottom pb-2 mb-2 ms-2">
+                                <input class="form-check-input" type="checkbox" onclick="toggleAll(this)"> 
+                                <label class="form-check-label fw-bold text-danger">Tümünü Temizle</label>
+                            </div>
+                            {% for item in unique_items %}
+                            <div class="form-check ms-2">
+                                <input class="form-check-input filter-check" type="checkbox" value="{{ item }}" onchange="filterTable()">
+                                <label class="form-check-label small">{{ item }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="rulesTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="35%">Eğer (Antecedents)</th>
+                                <th width="5%"></th>
+                                <th width="35%">O Zaman (Consequents)</th>
+                                <th onclick="sortTable(3)" style="cursor:pointer;" title="Sıralamak için tıkla">
+                                    Güven <i class="fas fa-sort text-muted ms-1"></i>
+                                </th>
+                                <th onclick="sortTable(4)" style="cursor:pointer;" title="Sıralamak için tıkla">
+                                    Lift <i class="fas fa-sort text-muted ms-1"></i>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rule in rules %}
+                            <tr class="rule-row" data-antecedents="{{ rule.antecedents|join(',') }}">
+                                <td>
+                                    {% for item in rule.antecedents %}
+                                        <span class="badge rounded-pill badge-cause">{{ item }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td class="text-center"><i class="fas fa-arrow-right text-muted"></i></td>
+                                <td>
+                                    {% for item in rule.consequents %}
+                                        <span class="badge rounded-pill badge-result">{{ item }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td data-val="{{ rule.confidence }}">
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2 fw-bold text-dark small">%{{ (rule.confidence * 100)|int }}</span>
+                                        <div class="progress flex-grow-1" style="height: 5px;">
+                                            <div class="progress-bar bg-info" style="width: {{ rule.confidence * 100 }}%;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-val="{{ rule.lift }}" class="fw-bold {% if rule.lift > 1.0 %}text-success{% else %}text-muted{% endif %}">
+                                    {{ rule.lift }}x
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="tab-pane fade {% if active_tab == 'tree' %}show active{% endif %}" id="tree" role="tabpanel">
+            <div class="card main-card p-4 bg-white">
+                <form action="/" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="decision_tree">
+                    
+                    <div class="alert alert-info py-2">
+                        <small><i class="fas fa-info-circle"></i> Hedef: "Ay sonunu getirebiliyor musunuz?" sorusunun cevabını tahmin etmek.</small>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">Excel Dosyası:</label>
+                            <input class="form-control" type="file" name="file" accept=".xlsx" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Algoritma Kriteri:</label>
+                            <select name="tree_criterion" class="form-select">
+                                <option value="entropy" selected>Entropy (ID3)</option>
+                                <option value="gini">Gini (CART)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 fw-bold mt-3">AĞACI OLUŞTUR VE ÇİZ</button>
+                </form>
+            </div>
+
+            {% if tree_image %}
+            <div class="card main-card p-4 mt-4 text-center">
+                <h4 class="text-success mb-3">🌳 Karar Ağacı Görselleştirmesi</h4>
+                <div style="overflow-x: auto;">
+                    <img src="data:image/png;base64,{{ tree_image }}" class="img-fluid rounded border" alt="Karar Ağacı">
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="tab-pane fade {% if active_tab == 'kmeans' %}show active{% endif %}" id="kmeans" role="tabpanel">
+            <div class="card main-card p-4 bg-white">
+                <form action="/" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="kmeans">
+                    
+                    <div class="alert alert-warning py-2">
+                        <small><i class="fas fa-lightbulb"></i> Öğrencileri benzer özelliklerine göre gruplara ayırır.</small>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">Excel Dosyası:</label>
+                            <input class="form-control" type="file" name="file" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Grup Sayısı (K):</label>
+                            <select name="n_clusters" class="form-select">
+                                <option value="2">2 Grup</option>
+                                <option value="3" selected>3 Grup</option>
+                                <option value="4">4 Grup</option>
+                                <option value="5">5 Grup</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 fw-bold mt-3 text-white">ÖĞRENCİLERİ GRUPLA (K-MEANS)</button>
+                </form>
+            </div>
+
+            {% if kmeans_image %}
+            <div class="card main-card p-4 mt-4 text-center">
+                <h4 class="text-warning mb-3">🎯 Öğrenci Profilleri Haritası</h4>
+                <div style="overflow-x: auto;">
+                    <img src="data:image/png;base64,{{ kmeans_image }}" class="img-fluid rounded border">
+                </div>
+            </div>
+
+            {% if cluster_summaries %}
+            <div class="row mt-4">
+                <div class="col-12"><h5 class="text-secondary mb-3"><i class="fas fa-search"></i> Grup Analiz Raporu</h5></div>
+                
+                {% for group in cluster_summaries %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 shadow-sm border-0" style="border-top: 5px solid {% if group.id == 1 %}#ff7675{% elif group.id == 2 %}#74b9ff{% elif group.id == 3 %}#55efc4{% elif group.id == 4 %}#a29bfe{% else %}#fdcb6e{% endif %};">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Grup {{ group.id }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ group.count }} Öğrenci</h6>
+                            <hr>
+                            
+                            <p class="small fw-bold text-success mb-1">✅ Baskın Özellikler:</p>
+                            {% if group.features %}
+                                <ul class="small ps-3 mb-2">
+                                    {% for feat in group.features %}<li>{{ feat }}</li>{% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="small text-muted fst-italic ps-2">Belirgin özellik yok.</p>
+                            {% endif %}
+
+                            <p class="small fw-bold text-danger mb-1 mt-3">❌ İlgilenmedikleri:</p>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for neg in group.negatives %}
+                                <span class="badge bg-light text-secondary border">{{ neg }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger mt-4 shadow-sm border-danger">
+        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+    </div>
+    {% endif %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // --- 1. HIZLI FİLTRELEME VE SAYIM ---
+    function filterTable() {
+        var checkboxes = document.querySelectorAll('.filter-check:checked');
+        var selectedValues = Array.from(checkboxes).map(cb => cb.value);
+        
+        var table = document.getElementById("rulesTable");
+        var tr = table.getElementsByClassName("rule-row");
+        var visibleCount = 0;
+
+        for (var i = 0; i < tr.length; i++) {
+            var antecedents = tr[i].getAttribute("data-antecedents");
+            var showRow = true;
+            
+            if (selectedValues.length > 0) {
+                for (var j = 0; j < selectedValues.length; j++) {
+                    if (!antecedents.includes(selectedValues[j])) {
+                        showRow = false;
+                        break;
+                    }
+                }
+            }
+            
+            if (showRow) {
+                tr[i].style.display = "";
+                visibleCount++;
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+        document.getElementById("ruleCount").innerText = visibleCount;
+    }
+    
+    // --- 2. TÜMÜNÜ TEMİZLE ---
+    function toggleAll(source) {
+        var checkboxes = document.querySelectorAll('.filter-check');
+        for(var i=0; i<checkboxes.length; i++) {
+            checkboxes[i].checked = false;
+        }
+        source.checked = false;
+        filterTable();
+    }
+    
+    var dropdown = document.querySelector('.filter-dropdown-menu');
+    if(dropdown){
+        dropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+    }
+
+    // --- 3. ULTRA HIZLI SIRALAMA (Data-Attribute Yöntemi) ---
+    function sortTable(n) {
+        var table = document.getElementById("rulesTable");
+        var tbody = table.querySelector("tbody");
+        
+        if (!tbody || tbody.rows.length === 0) return;
+
+        var rows = Array.from(tbody.rows);
+        var currentOrder = table.getAttribute("data-order") || "asc";
+        var newOrder = currentOrder === "asc" ? "desc" : "asc";
+        
+        rows.sort(function(a, b) {
+            var xVal = parseFloat(a.cells[n].getAttribute("data-val")) || 0;
+            var yVal = parseFloat(b.cells[n].getAttribute("data-val")) || 0;
+            return newOrder === "asc" ? (xVal - yVal) : (yVal - xVal);
+        });
+
+        // DOM Manipülasyonunu tek seferde yap
+        var fragment = document.createDocumentFragment();
+        rows.forEach(function(row) {
+            fragment.appendChild(row);
+        });
+        tbody.appendChild(fragment);
+        
+        table.setAttribute("data-order", newOrder);
+        updateSortIcons(n, newOrder);
+    }
+
+    function updateSortIcons(colIndex, order) {
+        document.querySelectorAll('thead th i').forEach(function(icon) {
+            icon.className = 'fas fa-sort text-muted ms-1';
+        });
+        
+        var targetTh = document.querySelectorAll('#rulesTable thead th')[colIndex];
+        if (targetTh) {
+            var icon = targetTh.querySelector('i');
+            if (icon) {
+                icon.className = order === "asc" ? 
+                    "fas fa-sort-up text-primary ms-1" : 
+                    "fas fa-sort-down text-primary ms-1";
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
