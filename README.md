@@ -37,3 +37,7 @@ Projeyi kendi bilgisayarınızda çalıştırmak için:
 
 ## 📷 Ekran Görüntüleri
 <img width="1863" height="883" alt="image" src="https://github.com/user-attachments/assets/b3e7eaee-be7c-4b8e-8ebd-b2a57784e8d4" />
+<img width="1344" height="756" alt="image" src="https://github.com/user-attachments/assets/d1be02f9-28bb-4157-9d58-48895da8570b" />
+<img width="827" height="790" alt="image" src="https://github.com/user-attachments/assets/28e7def5-f210-48fd-8666-22878bbc94fe" />
+
+
